@@ -183,5 +183,5 @@ def main_func(input_func1=input):
         elif choice == "7":
             model.save_all(records, "fuel_consumption.pickle")
 
-
-main_func()
+if __name__ == "__main__":
+    main_func()

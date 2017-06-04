@@ -1,3 +1,5 @@
+*.pickle
+
 # Created by https://www.gitignore.io/api/qt,joe,linux,emacs,python,windows,pycharm
 
 ### Emacs ###
