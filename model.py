@@ -1,5 +1,7 @@
 from configparser import ConfigParser
-import sqlite3 
+from os.path import exists
+from pathlib import Path
+import sqlite3
 import _pickle
 from _datetime import datetime
 
@@ -10,13 +12,15 @@ def get_general_records_length(records):
         res += item.length
     return res
 
+
 def get_general_records_fuel_used(records):
     res = 0
     for item in records:
         res += get_used_fuel(item)
     return res
 
-class Record(object):
+
+class Record:
     """Class that represents container for length of the way, date and fuel
     coefficient """
 
@@ -31,27 +35,40 @@ class Record(object):
         self.length = _length
         self.coefficient = _coefficient
 
+
 class Model:
     def __init__(self):
         self.config = ConfigParser()
         self.config.read("ini")
         self.db_type = self.config["db-selection"]["db"]
         self.file_name = "fuel_consumption"
+
         if self.db_type == "pickle":
             self.file_name += ".pickle"
             with open(self.file_name, 'rb') as f:
                 self.records = _pickle.load(f)
         elif self.db_type == "sqlite":
             self.file_name += ".db"
-            self.records = None
-
+            #### this part doesn't work somehow
+            if not exists(self.file_name):
+                Path(self.file_name).touch(mode=0o666)
+            conn = sqlite3.connect(self.file_name)
+            c = conn.cursor()
+            c.execute("CREATE TABLE IF NOT EXISTS fuel_consumption "
+                      + "(trip_id integer PRIMARY KEY, date text, "
+                      + "length real, consumption real, fuel_used real);")
+            conn.commit()
+            c.execute("SELECT * FROM fuel_consumption")
+            print(c.fetchone)
+            conn.close()
+            ####
+            self.records = []
 
     def save_all(self):
         """Saves list of all values to file"""
         with open(self.file_name, 'wb') as f:
             _pickle.dump(self.records, f)
 
-            
     def find_by_date(self, date):
         """Returns list of items by date or 'False' otherwise"""
         items = []
@@ -60,9 +77,9 @@ class Model:
                 items.append(item)
         return items
 
-    
     def find_by_date_range(self, first_date, second_date):
-        """Returns list of items chosen by date in date range or 'False' otherwise"""
+        """Returns list of items chosen by date in date range
+        or 'False' otherwise"""
         items = []
         for item in self.records:
             if compare_date(item.date, first_date) == -1 or \
@@ -72,15 +89,14 @@ class Model:
                 items.append(item)
         return items
 
-
     def get_general_length(self):
         """Returns all length we've passed through"""
         get_general_records_length(self.records)
 
-
     def get_general_fuel_used(self):
         """Returns all fuel we've spent"""
         get_general_records_fuel_used(self.records)
+
 
 def check_validity_of_date(date):
     """Returns 'True' if date is valid or 'False' otherwise
@@ -164,6 +180,7 @@ def compare_date(first_date, second_date):
     elif first == second:
         return 0
     return 1
+
 
 def get_used_fuel(record):
     """Returns value of used fuel by given record

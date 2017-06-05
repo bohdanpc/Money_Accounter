@@ -85,8 +85,3 @@ class Controler:
                 Record(item_list[0], item_list[1], item_list[2]))
         else:
             view.invalid_value()
-
-
-if __name__ == "__main__":
-    Controler(Model()).run()
-    # main_func()

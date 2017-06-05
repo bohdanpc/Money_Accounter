@@ -1,2 +1,2 @@
-[db-selection]
+[db-selection] # db can be 'sqlite' or 'pickle'
         db = pickle
