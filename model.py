@@ -1,7 +1,20 @@
 from configparser import ConfigParser
+import sqlite3 
 import _pickle
 from _datetime import datetime
 
+
+def get_general_records_length(records):
+    res = 0
+    for item in records:
+        res += item.length
+    return res
+
+def get_general_records_fuel_used(records):
+    res = 0
+    for item in records:
+        res += get_used_fuel(item)
+    return res
 
 class Record(object):
     """Class that represents container for length of the way, date and fuel
@@ -18,31 +31,56 @@ class Record(object):
         self.length = _length
         self.coefficient = _coefficient
 
-
-def initialise(file_name):
-    """Returns list of values we've already added"""
-    cfg = ConfigParser()
-    cfg.read("ini")
-    db_type = cfg["db-selection"]["db"]
-    if db_type == "pickle":
-        try:
-            with open(file_name, 'rb') as f:
-                records = _pickle.load(f)
-                f.close()
-            return records
-        except Exception:
-            return []
-    elif db_type == "sqlite":
-        pass
-        
+class Model:
+    def __init__(self):
+        self.config = ConfigParser()
+        self.config.read("ini")
+        self.db_type = self.config["db-selection"]["db"]
+        self.file_name = "fuel_consumption"
+        if self.db_type == "pickle":
+            self.file_name += ".pickle"
+            with open(self.file_name, 'rb') as f:
+                self.records = _pickle.load(f)
+        elif self.db_type == "sqlite":
+            self.file_name += ".db"
+            self.records = None
 
 
-def save_all(records, file_name):
-    """Saves list of all values to file"""
-    with open(file_name, 'wb') as f:
-        _pickle.dump(records, f)
-    f.close()
+    def save_all(self):
+        """Saves list of all values to file"""
+        with open(self.file_name, 'wb') as f:
+            _pickle.dump(self.records, f)
 
+            
+    def find_by_date(self, date):
+        """Returns list of items by date or 'False' otherwise"""
+        items = []
+        for item in self.records:
+            if item.date == date:
+                items.append(item)
+        return items
+
+    
+    def find_by_date_range(self, first_date, second_date):
+        """Returns list of items chosen by date in date range or 'False' otherwise"""
+        items = []
+        for item in self.records:
+            if compare_date(item.date, first_date) == -1 or \
+               compare_date(item.date, second_date) == 1:
+                continue
+            else:
+                items.append(item)
+        return items
+
+
+    def get_general_length(self):
+        """Returns all length we've passed through"""
+        get_general_records_length(self.records)
+
+
+    def get_general_fuel_used(self):
+        """Returns all fuel we've spent"""
+        get_general_records_fuel_used(self.records)
 
 def check_validity_of_date(date):
     """Returns 'True' if date is valid or 'False' otherwise
@@ -103,7 +141,7 @@ def check_validity(item):
         item[1] = float(item[1])
         item[2] = float(item[2])
         return True
-    except:
+    except ValueError:
         return False
 
 
@@ -127,47 +165,6 @@ def compare_date(first_date, second_date):
         return 0
     return 1
 
-
-def find_by_date(records, date):
-    """Returns list of items by date or 'False' otherwise
-
-    >>> l=[Record("12-01-2017",125,3.14), Record("12-03-2017",250,14.20),\
-    Record("12-03-2017",456,55.11)]
-    >>> result = find_by_date(l,"12-03-2017")
-    >>> result[0].length
-    250
-    >>> result[1].length
-    456
-    """
-    items = []
-    for item in records:
-        if item.date == date:
-            items.append(item)
-    return items
-
-
-def find_by_date_range(records, first_date, second_date):
-    """Returns list of items chosen by date in date range or 'False' otherwise
-
-    >>> l=[Record("12-01-2017",125,3.14), Record("12-02-2017",250,14.20),\
-     Record("12-03-2017",456,55.11), Record("12-04-2017",887,15), \
-     Record("12-05-2017",337,1.08), Record("12-06-2017",225,0.75)]
-    >>> result = find_by_date_range(l,"01-03-2017","22-05-2017")
-    >>> result[0].length
-    456
-    >>> result[1].length
-    887
-    """
-    items = []
-    for item in records:
-        if compare_date(item.date, first_date) == -1 or \
-                        compare_date(item.date, second_date) == 1:
-            continue
-        else:
-            items.append(item)
-    return items
-
-
 def get_used_fuel(record):
     """Returns value of used fuel by given record
 
@@ -175,29 +172,3 @@ def get_used_fuel(record):
     20.0
     """
     return (record.coefficient * record.length) / 100
-
-
-def get_general_length(records):
-    """Returns all length we've passed through
-
-    >>> get_general_length([Record("12-03-2017",300,10),\
-    Record("12-03-2017",100,20)])
-    400
-    """
-    res = 0
-    for item in records:
-        res += item.length
-    return res
-
-
-def get_general_fuel_used(records):
-    """Returns all fuel we've spent
-
-    >>> get_general_fuel_used([Record("12-03-2017",300,10),\
-     Record("12-03-2017",100,20)])
-    50.0
-    """
-    res = 0
-    for item in records:
-        res += get_used_fuel(item)
-    return res
