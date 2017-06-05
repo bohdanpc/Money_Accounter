@@ -166,6 +166,7 @@ def main_func(input_func1=input):
 
     choice = ''
     records = model.initialise("fuel_consumption.pickle")
+        
     while choice != "7":
         choice = str(view.menu(input_func1))
         if choice == "1":

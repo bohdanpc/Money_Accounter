@@ -115,7 +115,7 @@ Enter the fuel consumption:['dd-mm-yyyy', 'aaa', 'bb']
     length = input_func2()
     print("Enter the fuel consumption:", end="")
     coefficient = input_func3()
-    return [date, length, coefficient]
+    return date, length, coefficient
 
 
 def print_record(record, used_fuel=-1):

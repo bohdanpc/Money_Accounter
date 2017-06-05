@@ -1,3 +1,4 @@
+from configparser import ConfigParser
 import _pickle
 from _datetime import datetime
 
@@ -20,13 +21,20 @@ class Record(object):
 
 def initialise(file_name):
     """Returns list of values we've already added"""
-    try:
-        with open(file_name, 'rb') as f:
-            records = _pickle.load(f)
-            f.close()
-        return records
-    except Exception:
-        return []
+    cfg = ConfigParser()
+    cfg.read("ini")
+    db_type = cfg["db-selection"]["db"]
+    if db_type == "pickle":
+        try:
+            with open(file_name, 'rb') as f:
+                records = _pickle.load(f)
+                f.close()
+            return records
+        except Exception:
+            return []
+    elif db_type == "sqlite":
+        pass
+        
 
 
 def save_all(records, file_name):
