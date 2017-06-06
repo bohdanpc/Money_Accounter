@@ -68,7 +68,6 @@ class Controler:
 
     def show_by_period(self):
         """show length ridden and fuel used by certain period (from - to)"""
-
         left, right = view.enter_period(input, input)
         if check_validity_of_date(left) and \
            check_validity_of_date(right):

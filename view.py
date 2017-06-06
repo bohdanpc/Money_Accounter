@@ -1,5 +1,6 @@
 import controller
 
+
 def menu(input_func=input):
     """Shows menu on the screen"""
     print("\n---Record fuel consumption---")

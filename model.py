@@ -99,31 +99,7 @@ class Model:
 
 
 def check_validity_of_date(date):
-    """Returns 'True' if date is valid or 'False' otherwise
-
-    >>> check_validity_of_date("12-28-1990")
-    False
-    >>> check_validity_of_date("-12-12-12")
-    False
-    >>> check_validity_of_date("12-12-invalid")
-    False
-    >>> check_validity_of_date("returns false")
-    False
-    >>> check_validity_of_date("12--12-12")
-    False
-    >>> check_validity_of_date("30-02-2016")
-    False
-    >>> check_validity_of_date("42-12-2012")
-    False
-    >>> check_validity_of_date("31-04-2016")
-    False
-    >>> check_validity_of_date("29-02-2017")
-    False
-    >>> check_validity_of_date("10-04-2017")
-    True
-    >>> check_validity_of_date("29-02-2016")
-    True
-    """
+    """Returns 'True' if date is valid or 'False' otherwise"""
     tmp = date.split('-')
     try:
         day, month, year = int(tmp[0]), int(tmp[1]), int(tmp[2])
@@ -140,17 +116,7 @@ def check_validity_of_date(date):
 
 
 def check_validity(item):
-    """check validity of date, length and coefficent input
-
-    >>> check_validity(["12-35-2012", 125, 12])
-    False
-    >>> check_validity(["12-10-1996", 123, 10.5])
-    True
-    >>> check_validity(["10-09-2015", "12", 10])
-    True
-    >>> check_validity(["5-04-2014", 53.2, "152b"])
-    False
-    """
+    """check validity of date, length and coefficent input"""
     if not check_validity_of_date(item[0]):
         return False
     try:
@@ -162,15 +128,7 @@ def check_validity(item):
 
 
 def compare_date(first_date, second_date):
-    """Returns '0', '1' or '-1' dependent on equality of parameters
-
-    >>> compare_date("12-12-12","12-12-2017")
-    -1
-    >>> compare_date("12-12-2017","12-12-12")
-    1
-    >>> compare_date("12-12-2017","12-12-2017")
-    0
-    """
+    """Returns '0', '1' or '-1' dependent on equality of parameters"""
     first = first_date.split('-')
     second = second_date.split('-')
     first = datetime(int(first[2]), int(first[1]), int(first[0]))
@@ -183,9 +141,5 @@ def compare_date(first_date, second_date):
 
 
 def get_used_fuel(record):
-    """Returns value of used fuel by given record
-
-    >>> get_used_fuel(Record("12-03-2017",200,10))
-    20.0
-    """
+    """Returns value of used fuel by given record"""
     return (record.coefficient * record.length) / 100
