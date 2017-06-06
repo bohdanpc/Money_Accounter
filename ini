@@ -1,2 +1,3 @@
-[db-selection] # db can be 'sqlite' or 'pickle' or 'postgres'
-        db = postgres
+[db-selection] # db can be 'sqlite' or 'pickle' or 'postgres' or 'mysql'
+        db = mysql
+

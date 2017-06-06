@@ -43,26 +43,26 @@ class Model:
         self.db_type = self.config["db-selection"]["db"]
         self.file_name = "fuel_consumption"
 
-        if self.db_type == "pickle":
-            self.file_name += ".pickle"
-            with open(self.file_name, 'rb') as f:
-                self.records = _pickle.load(f)
-        elif self.db_type == "sqlite":
-            self.file_name += ".db"
-            #### this part doesn't work somehow
-            if not exists(self.file_name):
-                Path(self.file_name).touch(mode=0o666)
-            conn = sqlite3.connect(self.file_name)
-            c = conn.cursor()
-            c.execute("CREATE TABLE IF NOT EXISTS fuel_consumption "
-                      + "(trip_id integer PRIMARY KEY, date text, "
-                      + "length real, consumption real, fuel_used real);")
-            conn.commit()
-            c.execute("SELECT * FROM fuel_consumption")
-            print(c.fetchone)
-            conn.close()
-            ####
-            self.records = []
+        
+        self.file_name += ".pickle"
+        with open(self.file_name, 'rb') as f:
+            self.records = _pickle.load(f)
+        # elif self.db_type == "sqlite":
+        #     self.file_name += ".db"
+        #     #### this part doesn't work somehow
+        #     if not exists(self.file_name):
+        #         Path(self.file_name).touch(mode=0o666)
+        #     conn = sqlite3.connect(self.file_name)
+        #     c = conn.cursor()
+        #     c.execute("CREATE TABLE IF NOT EXISTS fuel_consumption "
+        #               + "(trip_id integer PRIMARY KEY, date text, "
+        #               + "length real, consumption real, fuel_used real);")
+        #     conn.commit()
+        #     c.execute("SELECT * FROM fuel_consumption")
+        #     print(c.fetchone)
+        #     conn.close()
+        #     ####
+        #     self.records = []
 
     def save_all(self):
         """Saves list of all values to file"""
