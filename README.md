@@ -1,6 +1,6 @@
 # FuelCalculator
 ### PostgreSQL:
- -run PostgreSQL server
- -edit DB settings in postgresql_controller.py
- -edit 'ini' settings
- -run and enjoy
+ -run PostgreSQL server <br />
+ -edit DB settings in postgresql_controller.py <br />
+ -edit 'ini' settings <br />
+ -run and enjoy <br />
