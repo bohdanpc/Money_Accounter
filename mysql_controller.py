@@ -14,7 +14,10 @@ class MysqlController:
             warnings.simplefilter("ignore")
             self.cursor.execute("create database if not exists " + self.dbname)
             self.cursor.execute("use " + self.dbname)
-            self.cursor.execute("create table if not exists " + self.tablename + "(id serial primary key, date date, length float, coef float, fuel_used float)")             
+            self.cursor.execute("create table if not exists " + self.tablename + "(id serial primary key, date date, length float, coef float, fuel_used float)")
+
+    def _mk_date_usable(self, date_str):
+        return dt.datetime.strptime(date_str, "%d-%m-%Y").strftime('%Y-%m-%d %H:%M:%S')
 
     def run(self):
         choice = ''
@@ -54,8 +57,7 @@ class MysqlController:
         self.cursor.execute("select * from " + self.tablename)
         table = self.cursor.fetchall()
         view.record_names()
-        for row in table:
-            print("%10s|%10s|%18s|%10s|"%(str(row[1]),  str(row[2]),  str(row[3]), str(row[4])))
+        view.print_table_from_sql(table)
 
     def show_summary(self):
         """show the sum of km's ridden and fuel used"""
@@ -70,14 +72,13 @@ class MysqlController:
         left, right = view.enter_period(input, input)
 
         if mdl.check_validity_of_date(left) and mdl.check_validity_of_date(right):
-            left = dt.datetime.strptime(left, "%d-%m-%Y").strftime('%Y-%m-%d %H:%M:%S')
-            right = dt.datetime.strptime(right, "%d-%m-%Y").strftime('%Y-%m-%d %H:%M:%S')
+            left = self._mk_date_usable(left)
+            right = self._mk_date_usable(right)
             self.cursor.execute("select *  from " + self.tablename + " where date >= %s and date <= %s",
                                 (left, right))
             table = self.cursor.fetchall()
             view.record_names()
-            for row in table:
-                print("%10s|%10s|%18s|%10s|"%(str(row[1]),  str(row[2]),  str(row[3]), str(row[4])))
+            view.print_table_from_sql(table)
         else:
             view.invalid_value()
 
@@ -87,14 +88,14 @@ class MysqlController:
         left, right = view.enter_period(input, input)
 
         if mdl.check_validity_of_date(left) and mdl.check_validity_of_date(right):
-            length = self.sum_period_length(dt.datetime.strptime(left, "%d-%m-%Y"),
-                                            dt.datetime.strptime(right, "%d-%m-%Y"))[0][0]
-            coef = self.sum_period_coef(dt.datetime.strptime(left, "%d-%m-%Y"),
-                                        dt.datetime.strptime(right, "%d-%m-%Y"))[0][0]
-            cons = int(length or 0) * int(coef or 0) / 100
-            print("Total length: " + str(length) +
-                  "\nTotal consumption: " + str(coef) +
-                  "\nTotal fuel used: " + str(cons))
+            left = self._mk_date_usable(left)
+            right = self._mk_date_usable(right)
+            self.cursor.execute("select sum(length) from " + self.tablename + " where date >= %s and date <= %s", (left, right))
+            length = self.cursor.fetchall()[0][0]
+            self.cursor.execute("select sum(fuel_used) from " + self.tablename + " where date >= %s and date <= %s", (left, right))
+            used = self.cursor.fetchall()[0][0]
+            view.print_summary(length, used)
+            
         else:
             view.invalid_value()
 
@@ -102,10 +103,10 @@ class MysqlController:
         """show length ridden and fuel used by certain date"""
         date = view.enter_date(input)
         if mdl.check_validity_of_date(date):
-            table = self.date(dt.datetime.strptime(date, "%d-%m-%Y"))
+            date = self._mk_date_usable(date)
+            self.cursor.execute("select * from " + self.tablename + " where date = %s", (date,))
+            table = self.cursor.fetchall()
             view.record_names()
-            for t in table:
-                print("\t\t" + str(t[1]) + "\t\t" + str(t[2]) + "\t\t" + str(t[3]) + "\t\t" +
-                      str(t[2] * t[3] / 100))
+            view.print_table_from_sql(table)
         else:
             view.invalid_value()
