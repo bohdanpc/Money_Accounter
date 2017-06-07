@@ -41,7 +41,8 @@ class Model:
         self.config = ConfigParser()
         self.config.read("ini")
         self.db_type = self.config["db-selection"]["db"]
-        self.file_name = "fuel_consumption"
+        self.file_name = "FUEL_CONSUMPTION"
+        self.db_name = "FUEL_CONSUMPTION"
 
         if self.db_type == "pickle":
             self.file_name += ".pickle"
@@ -49,25 +50,29 @@ class Model:
                 self.records = _pickle.load(f)
         elif self.db_type == "sqlite":
             self.file_name += ".db"
-            #### this part doesn't work somehow
+
             if not exists(self.file_name):
                 Path(self.file_name).touch(mode=0o666)
-            conn = sqlite3.connect(self.file_name)
-            c = conn.cursor()
-            c.execute("CREATE TABLE IF NOT EXISTS fuel_consumption "
-                      + "(trip_id integer PRIMARY KEY, date text, "
-                      + "length real, consumption real, fuel_used real);")
-            conn.commit()
-            c.execute("SELECT * FROM fuel_consumption")
-            print(c.fetchone)
-            conn.close()
-            ####
-            self.records = []
+
+            self.conn = sqlite3.connect(self.file_name)
+            self.cursor = self.conn.cursor()
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS FUEL_CONSUMPTION "
+                      + "(trip_id INTEGER PRIMARY KEY, date DATE, "
+                      + "length FLOAT, coef FLOAT);")
+            # self.records = c.fetchall()
+            self.conn.commit()
+
+            # c.execute("SELECT * FROM FUEL_CONSUMPTION")
+            # print(c.fetchall())
+            # conn.close()
 
     def save_all(self):
         """Saves list of all values to file"""
-        with open(self.file_name, 'wb') as f:
-            _pickle.dump(self.records, f)
+        if self.db_type == 'pickle':
+            with open(self.file_name, 'wb') as f:
+                _pickle.dump(self.records, f)
+        elif self.db_type == 'sqlite':
+            self.conn.close()
 
     def find_by_date(self, date):
         """Returns list of items by date or 'False' otherwise"""
