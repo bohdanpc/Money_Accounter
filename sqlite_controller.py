@@ -79,9 +79,10 @@ class SQLiteController:
             right = dt.datetime.strptime(right, "%d-%m-%Y").strftime('%Y-%m-%d %H:%M:%S')
 
             self.model.cursor.execute(
-                "SELECT SUM(length) FROM {db_name} WHERE date >= ? AND date <= ?".format(db_name=self.model.db_name),
+                "SELECT * FROM {db_name} WHERE date >= ? AND date <= ?".format(db_name=self.model.db_name),
                 (left, right))
             table = self.model.cursor.fetchall()
+            print(table)
             view.record_names()
             if len(table) > 0:
                 for t in table:
@@ -95,7 +96,8 @@ class SQLiteController:
         """add new record to the database"""
         item_list = view.enter_trip_details(input, input, input)
         if mdl.check_validity(item_list):
-            self.model.cursor.execute('INSERT INTO {} (date, length, coef) VALUES (?, ?, ?)'.format(self.model.db_name), item_list)
+            date = dt.datetime.strptime(item_list[0], "%d-%m-%Y").strftime('%Y-%m-%d')
+            self.model.cursor.execute('INSERT INTO {} (date, length, coef) VALUES (?, ?, ?)'.format(self.model.db_name), (date, item_list[1], item_list[2]))
             self.model.conn.commit()
         else:
             view.invalid_value()
