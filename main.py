@@ -2,6 +2,7 @@ from model import Model
 from controller import Controler
 from configparser import ConfigParser
 from postgresql_controller import PostgreSQLController
+from mysql_controller import MysqlController
 
 if __name__ == "__main__":
     config = ConfigParser()
@@ -10,8 +11,10 @@ if __name__ == "__main__":
     file_name = "fuel_consumption"
 
     if db_type == "pickle":
-        controller = Controler(Model)
+        controller = Controler(Model())
     elif db_type == "postgres":
         controller = PostgreSQLController()
+    elif db_type == "mysql":
+        controller = MysqlController()
 
     controller.run()

@@ -68,3 +68,8 @@ def print_summary(length, fuel_used):
 def invalid_value():
     """Print a message about incorrect value"""
     print("Invalid values entered")
+
+
+def print_table_from_sql(table):
+    for row in table:
+        print("%10s|%10s|%18s|%10s|"%(str(row[1]),  str(row[2]),  str(row[3]), str(row[4])))
